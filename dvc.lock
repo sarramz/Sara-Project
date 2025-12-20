@@ -9,8 +9,8 @@ stages:
       size: 245086152
     - path: src/components/data_ingestion.py
       hash: md5
-      md5: 352599b996485f0670b7896e549693b6
-      size: 3296
+      md5: 14e948af424146b1f8a5c5f15f1e23bd
+      size: 3290
     outs:
     - path: artifacts/raw_data.csv
       hash: md5
@@ -41,8 +41,8 @@ stages:
       size: 25716
     - path: src/components/data_validation.py
       hash: md5
-      md5: cadf1e4f6e64fcb4eaf0320ba6aaaec9
-      size: 12322
+      md5: aafb4f042d3d11b2c228f7213cec5587
+      size: 12309
     outs:
     - path: artifacts/test.csv
       hash: md5
@@ -69,15 +69,15 @@ stages:
       size: 20097
     - path: src/components/model_trainer.py
       hash: md5
-      md5: 16b20810cd3371611921041d6edf96ea
-      size: 18064
+      md5: b5fcbdc2fc16af370a929b8d4f399a5e
+      size: 17976
     outs:
     - path: artifacts/metrics.json
       hash: md5
-      md5: 77caf0eef2d5b8aabf8fde04ac4a16ee
+      md5: fd8f30d0a44775bce38dc22e34c7a932
       size: 152
     - path: artifacts/roberta_fakenews
       hash: md5
-      md5: f5d801c73ac44064a36ab2c4e61dfba0.dir
-      size: 1996155582
+      md5: 10cb3d852b6be6900bdcd07648e92625.dir
+      size: 1996155555
       nfiles: 16
