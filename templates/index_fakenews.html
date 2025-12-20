@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detection - MLOps Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.fake {
+            background: #fff3cd;
+            border-left: 5px solid #ff9800;
+        }
+
+        .result.real {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+
+        .result h2 {
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .result.fake h2 {
+            color: #ff9800;
+        }
+
+        .result.real h2 {
+            color: #28a745;
+        }
+
+        .metric {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .metric strong {
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .example h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .example-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+
+        .example-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Fake News Detection</h1>
+            <p>AI-Powered News Verification with RoBERTa</p>
+        </div>
+
+        <div class="content">
+            <div class="example">
+                <h3>Try Examples:</h3>
+                <button class="example-btn" onclick="loadExample(1)">Real News Example</button>
+                <button class="example-btn" onclick="loadExample(2)">Fake News Example</button>
+            </div>
+
+            <form id="predictionForm" onsubmit="predict(event)">
+                <div class="form-group">
+                    <label for="title">Article Title (optional)</label>
+                    <input type="text" id="title" name="title" placeholder="Enter news title...">
+                </div>
+
+                <div class="form-group">
+                    <label for="text">Article Text *</label>
+                    <textarea id="text" name="text" required placeholder="Paste the news article text here..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">🔍 Analyze Article</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing article...</p>
+            </div>
+
+            <div class="result" id="result">
+                <h2 id="prediction"></h2>
+                <div class="metric">
+                    <strong>Confidence:</strong> <span id="confidence"></span>
+                </div>
+                <div class="metric">
+                    <strong>Probability Real News:</strong> <span id="probReal"></span>
+                </div>
+                <div class="metric">
+                    <strong>Probability Fake News:</strong> <span id="probFake"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>MLOps Project - Fake News Detection with RoBERTa</p>
+            <p>Powered by Transformers & MLflow</p>
+        </div>
+    </div>
+
+    <script>
+        const examples = {
+            1: {
+                title: "Scientists Discover Breakthrough in Cancer Treatment",
+                text: "Researchers at a leading medical university have developed a new immunotherapy treatment that shows promising results in early clinical trials. The treatment targets specific cancer cells while minimizing damage to healthy tissue. Initial trials with 100 patients showed a 60% positive response rate."
+            },
+            2: {
+                title: "BREAKING: Aliens Spotted Landing in Major City!!!",
+                text: "Unbelievable footage shows alien spacecraft landing in the city center. Witnesses report seeing strange lights and hearing unusual sounds. Government officials are hiding the truth from the public! Share this before it's deleted! Mainstream media won't tell you this!"
+            }
+        };
+
+        function loadExample(num) {
+            document.getElementById('title').value = examples[num].title;
+            document.getElementById('text').value = examples[num].text;
+        }
+
+        async function predict(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('title').value;
+            const text = document.getElementById('text').value;
+
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('result').classList.remove('show');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        text: text
+                    })
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                document.getElementById('loading').classList.remove('show');
+
+                if (data.status === 'success') {
+                    // Show result
+                    const resultDiv = document.getElementById('result');
+                    resultDiv.classList.add('show');
+
+                    // Set class based on prediction
+                    resultDiv.classList.remove('fake', 'real');
+                    if (data.prediction === 'Fake News') {
+                        resultDiv.classList.add('fake');
+                    } else {
+                        resultDiv.classList.add('real');
+                    }
+
+                    // Update content
+                    document.getElementById('prediction').textContent = data.prediction;
+                    document.getElementById('confidence').textContent = data.confidence;
+                    document.getElementById('probReal').textContent = data.probabilities['Real News'];
+                    document.getElementById('probFake').textContent = data.probabilities['Fake News'];
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                document.getElementById('loading').classList.remove('show');
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+    - path: data/fake_news.csv
+      hash: md5
+      md5: 73c9675a4b3d09f86a6933d0b8d7d908
+      size: 245086152
+    - path: src/components/data_ingestion.py
+      hash: md5
+      md5: 352599b996485f0670b7896e549693b6
+      size: 3296
+    outs:
+    - path: artifacts/raw_data.csv
+      hash: md5
+      md5: b943cfe56879ea130ec6cc90bd86fea8
+      size: 245086162
+  data_preparation:
+    cmd: python -m src.components.data_preparation
+    deps:
+    - path: artifacts/raw_data.csv
+      hash: md5
+      md5: ab1eb4164f08473824b0b263236d64dc
+      size: 3492969
+    - path: src/components/data_preparation.py
+      hash: md5
+      md5: 6be800013b6f6b0737233ef73da81f96
+      size: 5783
+    outs:
+    - path: artifacts/prepared_data.csv
+      hash: md5
+      md5: 575b8ed00fd729148f3a9b21c27014d9
+      size: 25716
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+    - path: artifacts/prepared_data.csv
+      hash: md5
+      md5: 575b8ed00fd729148f3a9b21c27014d9
+      size: 25716
+    - path: src/components/data_validation.py
+      hash: md5
+      md5: cadf1e4f6e64fcb4eaf0320ba6aaaec9
+      size: 12322
+    outs:
+    - path: artifacts/test.csv
+      hash: md5
+      md5: ae82da441d5c2a92dd1bc6121b24f91e
+      size: 5995
+    - path: artifacts/train.csv
+      hash: md5
+      md5: 19bdd46f1566ea99e1abc56166e7e573
+      size: 20097
+    - path: artifacts/validation_report.json
+      hash: md5
+      md5: 35b728228d4052325ff20100e51804b6
+      size: 613
+  model_training:
+    cmd: python -m src.components.model_trainer
+    deps:
+    - path: artifacts/test.csv
+      hash: md5
+      md5: ae82da441d5c2a92dd1bc6121b24f91e
+      size: 5995
+    - path: artifacts/train.csv
+      hash: md5
+      md5: 19bdd46f1566ea99e1abc56166e7e573
+      size: 20097
+    - path: src/components/model_trainer.py
+      hash: md5
+      md5: 16b20810cd3371611921041d6edf96ea
+      size: 18064
+    outs:
+    - path: artifacts/metrics.json
+      hash: md5
+      md5: 77caf0eef2d5b8aabf8fde04ac4a16ee
+      size: 152
+    - path: artifacts/roberta_fakenews
+      hash: md5
+      md5: f5d801c73ac44064a36ab2c4e61dfba0.dir
+      size: 1996155582
+      nfiles: 16

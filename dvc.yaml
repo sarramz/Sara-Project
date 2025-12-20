@@ -1,0 +1,44 @@
+stages:
+  # Stage 1: Data Ingestion
+  data_ingestion:
+    cmd: python -m src.components.data_ingestion
+    deps:
+      - src/components/data_ingestion.py
+      - data/fake_news.csv
+    outs:
+      - artifacts/raw_data.csv
+
+  # Stage 2: Data Preparation
+  data_preparation:
+    cmd: python -m src.components.data_preparation
+    deps:
+      - src/components/data_preparation.py
+      - artifacts/raw_data.csv
+    outs:
+      - artifacts/prepared_data.csv
+
+  # Stage 3: Data Validation
+  data_validation:
+    cmd: python -m src.components.data_validation
+    deps:
+      - src/components/data_validation.py
+      - artifacts/prepared_data.csv
+    outs:
+      - artifacts/train.csv
+      - artifacts/test.csv
+      - artifacts/validation_report.json
+
+  # Stage 4: Model Training
+  model_training:
+    cmd: python -m src.components.model_trainer
+    deps:
+      - src/components/model_trainer.py
+      - artifacts/train.csv
+      - artifacts/test.csv
+    outs:
+      - artifacts/roberta_fakenews:
+          cache: true
+          persist: true
+    metrics:
+      - artifacts/metrics.json:
+          cache: false

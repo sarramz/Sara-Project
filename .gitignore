@@ -1,0 +1,133 @@
+# =======================================================
+# PYTHON DEFAULT IGNORE
+# =======================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+Notebook/*.ipynb
+Notebook/.ipynb_checkpoints/
+
+# SQLite / DB files
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables
+.env
+.env.*
+*.env
+venv/
+ENV/
+env/
+.venv/
+env.bak/
+venv.bak/
+
+# Pyenv / PDM / Poetry
+.pdm.toml
+.pdm-python
+.pdm-build/
+__pypackages__/
+
+# Caches
+.mypy_cache/
+.pyre/
+.pytype/
+cython_debug/
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# =======================================================
+# MLOPS / DATA SCIENCE IGNORE RULES
+# =======================================================
+
+# MLflow
+mlruns/
+mlartifacts/
+metrics.json
+
+# DVC (ignore local / secrets but keep metadata)
+!.dvc/
+.dvc/cache/
+.dvc/tmp/
+.dvc/config.local
+.dvc/config.local.backup
+.dvc/config.backup
+
+# Prefect
+prefect_data/
+prefect_flows/__pycache__/
+
+# Data & artifacts
+data/
+artifacts/
+logs/
+*.log
+**/logs/*
+*.csv
+*.tsv
+*.jsonl
+*.pickle
+*.pkl
+*.bin
+*.pt
+*.model
+*.h5
+*.joblib
+*.tar
+*.zip
+*.out
+
+# Training output
+catboost_info/
+checkpoints/
+runs/
+
+# Docker
+.dockerignore
+
+# =======================================================
+# SECURITY (AWS / CLOUD KEYS)
+# =======================================================
+.aws/
+credentials
+secrets/
+*credentials*
+*secret*
+*token*
+
+# =======================================================
+# PROJECT SPECIFIC
+# =======================================================
+monitoring/grafana-dashboards/

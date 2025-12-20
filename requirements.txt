@@ -1,0 +1,37 @@
+# Core ML Libraries
+pandas
+numpy
+seaborn
+scikit-learn
+
+
+# Web Framework
+flask
+
+# MLOps Tools
+mlflow
+dvc
+dvc[s3]
+prefect>=2.14.0
+
+# Testing
+pytest
+pytest-cov
+
+# Code Quality
+black
+flake8
+pre-commit
+
+# Monitoring & Logging
+prometheus-client
+python-dotenv
+
+# Model Serving
+gunicorn
+
+# Transformer Models (for Fake News Detection)
+transformers
+torch
+
+-e .
