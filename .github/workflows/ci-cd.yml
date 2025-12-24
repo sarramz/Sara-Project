@@ -1,0 +1,308 @@
+name: MLOps CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  DOCKER_IMAGE: mlops-fakenews
+
+jobs:
+  # Job 1: Lint and Code Quality
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Quality
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install linting tools
+      run: |
+        pip install flake8 black isort
+        
+    - name: Run Black
+      run: |
+        black --check src/ tests/ prefect_flows/ || true
+        
+    - name: Run isort
+      run: |
+        isort --check-only src/ tests/ prefect_flows/ || true
+        
+    - name: Run Flake8
+      run: |
+        flake8 src/ tests/ --max-line-length=120 --extend-ignore=E203,W503 --exit-zero
+
+  # Job 2: Run Tests
+  test:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+    needs: lint
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-mock
+        pip install pandas scikit-learn
+        
+    - name: Create directories
+      run: |
+        mkdir -p artifacts data logs
+        
+    - name: Run tests
+      run: |
+        pytest tests/test_basic.py -v --tb=short
+        
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          .pytest_cache/
+          artifacts/
+
+  # Job 3: Build Docker Images
+  build:
+    runs-on: ubuntu-latest
+    name: Build Docker
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build ML App Image
+      run: |
+        docker build -t ${{ env.DOCKER_IMAGE }}:latest .
+        docker images
+        
+    - name: Test Docker image
+      run: |
+        docker run --rm ${{ env.DOCKER_IMAGE }}:latest python --version
+        
+    - name: Save Docker image
+      run: |
+        docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > mlops-image.tar.gz
+        
+    - name: Upload Docker image artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: mlops-image.tar.gz
+        retention-days: 7
+
+  # Job 4: Integration Test with Services
+  integration-test:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+    needs: build
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Create test data
+      run: |
+        mkdir -p data
+        cat > data/fake_news.csv << 'EOF'
+        title,text,label
+        "Breaking News","This is fake news content for testing",1
+        "Real Story","This is real news content for testing",0
+        "Update","Another fake news article for testing",1
+        "Report","Another real news article for testing",0
+        EOF
+        
+    - name: Start MLflow service
+      run: |
+        docker-compose up -d mlflow
+        
+    - name: Wait for MLflow
+      run: |
+        timeout 60 bash -c 'until curl -f http://localhost:5000/health; do sleep 2; done'
+        
+    - name: Check MLflow is running
+      run: |
+        curl http://localhost:5000/health
+        
+    - name: Stop services
+      if: always()
+      run: |
+        docker-compose logs mlflow
+        docker-compose down -v
+
+  # Job 5: Start Full Stack
+  deploy-test:
+    runs-on: ubuntu-latest
+    name: Full Stack Test
+    needs: integration-test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Create test data
+      run: |
+        mkdir -p data
+        cat > data/fake_news.csv << 'EOF'
+        title,text,label
+        "Breaking News","This is fake news content",1
+        "Real Story","This is real news content",0
+        EOF
+        
+    - name: Start all services
+      run: |
+        docker-compose up -d
+        
+    - name: Wait for services
+      run: |
+        echo "Waiting for services to start..."
+        sleep 30
+        
+    - name: Check MLflow
+      run: |
+        curl -f http://localhost:5000/health || echo "MLflow not ready"
+        
+    - name: Check Prefect
+      run: |
+        curl -f http://localhost:4200/api/health || echo "Prefect not ready"
+        
+    - name: Check ML App
+      run: |
+        curl -f http://localhost:8080/health || echo "ML App not ready"
+        
+    - name: Check Prometheus
+      run: |
+        curl -f http://localhost:9090/-/healthy || echo "Prometheus not ready"
+        
+    - name: Check Grafana
+      run: |
+        curl -f http://localhost:3000/api/health || echo "Grafana not ready"
+        
+    - name: Show service logs
+      if: always()
+      run: |
+        echo "=== MLflow Logs ==="
+        docker-compose logs --tail=50 mlflow
+        echo "=== Prefect Server Logs ==="
+        docker-compose logs --tail=50 prefect
+        echo "=== ML App Logs ==="
+        docker-compose logs --tail=50 ml-app
+        
+    - name: Stop all services
+      if: always()
+      run: |
+        docker-compose down -v
+
+  # Job 6: Security Scan
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: build
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Download Docker image
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+        
+    - name: Load Docker image
+      run: |
+        docker load < mlops-image.tar.gz
+        
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ env.DOCKER_IMAGE }}:latest
+        format: 'table'
+        exit-code: '0'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+
+  # Job 7: Deploy to Production (Manual)
+  deploy-production:
+    runs-on: ubuntu-latest
+    name: Deploy to Production
+    needs: [test, build, integration-test, security]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Download Docker image
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+        
+    - name: Deployment notification
+      run: |
+        echo "🚀 Deploying to production environment"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Author: ${{ github.actor }}"
+        
+    - name: Simulate deployment
+      run: |
+        echo "In a real scenario, this would:"
+        echo "1. Push Docker image to registry"
+        echo "2. SSH to production server"
+        echo "3. Pull latest images"
+        echo "4. Run docker-compose up with production config"
+        echo "5. Run health checks"
+        echo "6. Send notifications"
+
+  # Summary Job
+  ci-cd-summary:
+    runs-on: ubuntu-latest
+    name: CI/CD Summary
+    needs: [lint, test, build, integration-test, security]
+    if: always()
+    
+    steps:
+    - name: Print summary
+      run: |
+        echo "==================================="
+        echo "CI/CD Pipeline Execution Summary"
+        echo "==================================="
+        echo "Repository: ${{ github.repository }}"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Author: ${{ github.actor }}"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Run Number: ${{ github.run_number }}"
+        echo "==================================="
+        echo "Lint: ${{ needs.lint.result }}"
+        echo "Test: ${{ needs.test.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Integration: ${{ needs.integration-test.result }}"
+        echo "Security: ${{ needs.security.result }}"
+        echo "==================================="

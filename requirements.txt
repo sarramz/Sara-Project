@@ -1,37 +1,42 @@
 # Core ML Libraries
-pandas
-numpy
-seaborn
-scikit-learn
-
+pandas==2.1.4
+numpy==1.26.3
+scikit-learn==1.4.0
 
 # Web Framework
-flask
+flask==3.0.0
+werkzeug==3.0.1
+gunicorn==21.2.0
 
-# MLOps Tools
+# Deep Learning
+torch==2.1.2
+transformers==4.36.2
+datasets==2.16.1
+accelerate==0.27.2
+
+# MLOps Tools (VERSIONS COMPATIBLES)
 mlflow
-dvc
-dvc[s3]
-prefect>=2.14.0
+prefect==3.6.7
+dvc[s3]==3.39.0
 
 # Testing
-pytest
-pytest-cov
+pytest==7.4.4
+pytest-cov==4.1.0
 
 # Code Quality
-black
-flake8
-pre-commit
+black==24.1.1
+flake8==7.0.0
 
 # Monitoring & Logging
-prometheus-client
-python-dotenv
+prometheus-client>=0.20.0
+python-dotenv==1.0.0
 
-# Model Serving
-gunicorn
+# Data Processing
+pyarrow==12.0.1
 
-# Transformer Models (for Fake News Detection)
-transformers
-torch
-
--e .
+# Core dependencies (COMPATIBLES)
+anyio>=4.4.0
+httpx>=0.27.0
+starlette>=0.37.0
+pydantic>=2.0.0
+sqlalchemy>=2.0.0

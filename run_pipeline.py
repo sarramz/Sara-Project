@@ -37,7 +37,7 @@ def run_fake_news_pipeline(
     """
     try:
         print("\n" + "=" * 70)
-        print("  🚀 FAKE NEWS DETECTION - MLOps PIPELINE")
+        print("   FAKE NEWS DETECTION - MLOps PIPELINE")
         print("=" * 70)
         print(f"Dataset: {data_path}")
         print(f"Model: {model_name}")
@@ -49,7 +49,7 @@ def run_fake_news_pipeline(
         print("=" * 70 + "\n")
 
         # Step 1: Data Ingestion
-        print("[1/2] 📊 Starting Data Ingestion...")
+        print("[1/2]  Starting Data Ingestion...")
         logging.info("Starting Data Ingestion")
 
         data_ingestion = DataIngestionFakeNews()
@@ -62,7 +62,7 @@ def run_fake_news_pipeline(
         print(f"  - Test: {test_data_path}\n")
 
         # Step 2: Model Training
-        print("[2/2] 🤖 Starting Model Training (with MLflow tracking)...")
+        print("[2/2] Starting Model Training (with MLflow tracking)...")
         logging.info("Starting Model Training")
 
         model_trainer = ModelTrainerRoBERTa()
@@ -77,11 +77,11 @@ def run_fake_news_pipeline(
             experiment_name="fake_news_detection",
         )
 
-        print(f"✓ Model Training Complete\n")
+        print(f" Model Training Complete\n")
 
         # Summary
         print("\n" + "=" * 70)
-        print("  ✅ PIPELINE COMPLETED SUCCESSFULLY!")
+        print("   PIPELINE COMPLETED SUCCESSFULLY!")
         print("=" * 70)
         print(f"F1 Score: {f1_score:.4f}")
         print(f"Model saved to: artifacts/roberta_fakenews/")
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
     # Check if data file exists
     if not os.path.exists(args.data):
-        print(f"❌ Error: Dataset not found at {args.data}")
+        print(f" Error: Dataset not found at {args.data}")
         print("\nPlease download a fake news dataset and place it at data/fake_news.csv")
         print("\nSuggested datasets:")
         print("  - WELFake: https://www.kaggle.com/datasets/saurabhshahane/fake-news-classification")
@@ -134,4 +134,4 @@ if __name__ == "__main__":
         mlflow_uri=args.mlflow_uri,
     )
 
-    print(f"\n✅ Final F1 Score: {f1_score:.4f}")
+    print(f"\n Final F1 Score: {f1_score:.4f}")

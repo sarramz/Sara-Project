@@ -10,7 +10,7 @@ push: null
 # Pull step - how workers retrieve your code
 pull:
   - prefect.deployments.steps.set_working_directory:
-      directory: C:\Users\user\Desktop\SDIA5\mlops\project-mlops-claude-mlops-project-fixes-01N1VAZ7F6FqdAHvRcQKd8Hz\project-mlops-claude-mlops-project-fixes-01N1VAZ7F6FqdAHvRcQKd8Hz
+      directory: /app
 
 # Deployments
 deployments:
@@ -25,13 +25,12 @@ deployments:
     work_pool:
       name: default-agent-pool
     parameters:
-      data_path: "data/fake_news.csv"
-      # sample_size: null  # Omit null values - let flow use its default
+      data_path: "/app/data/fake_news.csv"
       model_name: "roberta-base"
       epochs: 3
       batch_size: 8
       learning_rate: 0.00002
-      mlflow_uri: "http://localhost:5000"
+      mlflow_uri: "http://mlflow:5000"
     
     # Uncomment to add schedule
     # schedules:
@@ -48,11 +47,10 @@ deployments:
     work_pool:
       name: default-agent-pool
     parameters:
-      data_path: "data/fake_news.csv"
+      data_path: "/app/data/fake_news.csv"
       sample_size: 1000
       model_name: "roberta-base"
       epochs: 1
       batch_size: 8
       learning_rate: 0.00002
-      mlflow_uri: "http://localhost:5000"
-      
+      mlflow_uri: "http://mlflow:5000"

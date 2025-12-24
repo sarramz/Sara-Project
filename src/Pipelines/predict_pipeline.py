@@ -170,13 +170,13 @@ if __name__ == "__main__":
         # Predict
         print("\n" + "=" * 70)
         for i, article in enumerate(test_articles, 1):
-            print(f"\n📰 Article {i}:")
+            print(f"\n Article {i}:")
             print(f"Title: {article['title']}")
             print(f"Text: {article['text'][:100]}...")
 
             result = pipeline.predict_single(article["title"], article["text"])
 
-            print(f"\n🔍 Prediction: {result['prediction']}")
+            print(f"\n Prediction: {result['prediction']}")
             print(f"   Confidence: {result['confidence']:.2%}")
             print("   Probabilities:")
             print(f"     - Real News: {result['probabilities']['Real News']:.2%}")
@@ -184,5 +184,5 @@ if __name__ == "__main__":
             print("=" * 70)
 
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f" Error: {str(e)}")
         print("Make sure you have a trained model in artifacts/roberta_fakenews/")

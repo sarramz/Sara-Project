@@ -1,7 +1,7 @@
 services:
   # MLflow Tracking Server
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.9.2
+    image: ghcr.io/mlflow/mlflow:v2.18.0
     container_name: mlflow_server
     ports:
       - "5000:5000"
@@ -9,13 +9,16 @@ services:
       - ./mlruns:/mlflow/mlruns
       - ./mlartifacts:/mlflow/mlartifacts
     environment:
-      # Allow requests from Docker internal network
       - MLFLOW_TRACKING_INSECURE_TLS=true
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
     command: >
       mlflow server
       --host 0.0.0.0
       --port 5000
-      --backend-store-uri sqlite:///mlflow/mlruns/mlflow.db
+      --backend-store-uri sqlite:////mlflow/mlruns/mlflow.db
       --default-artifact-root /mlflow/mlartifacts
       --serve-artifacts
     networks:
@@ -39,8 +42,12 @@ services:
       - ./logs:/app/logs
       - ./data:/app/data 
     environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_TRACKING_URI=http://localhost:5000
       - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
     depends_on:
       - mlflow
     networks:
@@ -89,7 +96,6 @@ services:
     restart: unless-stopped
 
   # Prefect Server for orchestration
-# Prefect Server for orchestration
   prefect:
     build:
       context: .
@@ -101,8 +107,12 @@ services:
       - PREFECT_API_DATABASE_CONNECTION_URL=sqlite+aiosqlite:////app/prefect_data/prefect.db
       - PREFECT_SERVER_API_HOST=0.0.0.0
       - PREFECT_API_URL=http://localhost:4200/api
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - MLFLOW_TRACKING_URI=http://localhost:5000
       - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
     volumes:
       - ./prefect_data:/app/prefect_data
       - ./prefect_flows:/app/prefect_flows
@@ -110,8 +120,8 @@ services:
       - ./artifacts:/app/artifacts
       - ./data:/app/data
       - ./logs:/app/logs
-      - ./.dvc/config:/app/.dvc/config        # OK
-      - ./.dvc/cache:/app/.dvc/cache          # OK
+      - ./.dvc/config:/app/.dvc/config       
+      - ./.dvc/cache:/app/.dvc/cache         
       - ./.dvc/tmp:/app/.dvc/tmp 
     command: prefect server start --host 0.0.0.0
     depends_on:
@@ -120,15 +130,55 @@ services:
       - mlops-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4200/api/health"]
-      interval: 30s
+      test: ["CMD-SHELL", "curl -f http://localhost:4200/api/health || exit 1"]
+      interval: 15s
       timeout: 10s
-      retries: 3
+      retries: 10
+      start_period: 30s
+      
+  # Prefect Worker
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prefect_worker
+    environment:
+      - PREFECT_API_URL=http://prefect:4200/api
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONUNBUFFERED=1
+      - PYTHONIOENCODING=utf-8
+      - PYTHONUTF8=1
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+    volumes:
+      - ./prefect_flows:/app/prefect_flows
+      - ./src:/app/src
+      - ./artifacts:/app/artifacts
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./mlruns:/app/mlruns
+      - ./mlartifacts:/app/mlartifacts
+      - ./.dvc/config:/app/.dvc/config
+      - ./.dvc/cache:/app/.dvc/cache
+      - ./.dvc/tmp:/app/.dvc/tmp
+    command: >
+      sh -c "
+      echo 'Waiting for Prefect server to be ready...' &&
+      echo 'Prefect server is ready!' &&
+      prefect worker start --pool 'default-agent-pool'
+      "
+
+    depends_on:
+      - prefect
+      - mlflow
+    networks:
+      - mlops-network
+    restart: unless-stopped
 
 networks:
   mlops-network:
     driver: bridge
-
+    
 volumes:
   prometheus-data:
   grafana-data:

@@ -2,14 +2,11 @@
 Prefect Flow for ML Pipeline
 Orchestrates: Ingestion → Preparation → Validation → Training
 """
-
 from prefect import flow, task
 from typing import Optional
-
 import sys
 from pathlib import Path
 
-# Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -32,13 +29,13 @@ def data_ingestion_task(data_path: str = "data/fake_news.csv", sample_size: Opti
     Returns:
         Path to raw data file
     """
-    logging.info("📄 Starting Data Ingestion Task")
+    logging.info(" Starting Data Ingestion Task")
     ingestion = DataIngestion()
     raw_data_path = ingestion.initiate_data_ingestion(
         data_path=data_path,
         sample_size=sample_size
     )
-    logging.info(f"✅ Data Ingestion Complete: {raw_data_path}")
+    logging.info(f" Data Ingestion Complete: {raw_data_path}")
     return raw_data_path
 
 
@@ -53,10 +50,10 @@ def data_preparation_task(raw_data_path: str):
     Returns:
         Path to prepared data file
     """
-    logging.info("📄 Starting Data Preparation Task")
+    logging.info(" Starting Data Preparation Task")
     preparation = DataPreparation()
     prepared_data_path = preparation.initiate_data_preparation(raw_data_path)
-    logging.info(f"✅ Data Preparation Complete: {prepared_data_path}")
+    logging.info(f" Data Preparation Complete: {prepared_data_path}")
     return prepared_data_path
 
 
@@ -71,12 +68,12 @@ def data_validation_task(prepared_data_path: str):
     Returns:
         Tuple of (train_path, test_path, report_path)
     """
-    logging.info("📄 Starting Data Validation Task")
+    logging.info(" Starting Data Validation Task")
     validation = DataValidation()
     train_path, test_path, report_path = validation.initiate_data_validation(
         prepared_data_path
     )
-    logging.info(f"✅ Data Validation Complete")
+    logging.info(f" Data Validation Complete")
     logging.info(f"   Train: {train_path}")
     logging.info(f"   Test: {test_path}")
     return train_path, test_path, report_path
@@ -87,7 +84,7 @@ def model_training_task(
     train_path: str,
     test_path: str,
     model_name: str = "roberta-base",
-    epochs: int = 3,
+    epochs: int = 1,
     batch_size: int = 8,
     learning_rate: float = 2e-5,
     mlflow_uri: str = "http://localhost:5000"
@@ -107,7 +104,7 @@ def model_training_task(
     Returns:
         Dictionary with training results
     """
-    logging.info("📄 Starting Model Training Task")
+    logging.info(" Starting Model Training Task")
     
     config = ModelTrainerConfig(
         model_name=model_name,
@@ -120,7 +117,7 @@ def model_training_task(
     trainer = ModelTrainer(config)
     results = trainer.initiate_model_trainer(train_path, test_path)
     
-    logging.info(f"✅ Model Training Complete")
+    logging.info(f" Model Training Complete")
     logging.info(f"   Model: {results['model_path']}")
     logging.info(f"   F1 Score: {results['metrics']['f1']:.4f}")
     
@@ -133,7 +130,7 @@ def model_training_task(
 )
 def ml_pipeline_flow(
     data_path: str = "data/fake_news.csv",
-    sample_size: Optional[int] = None,  # Changed to Optional[int]
+    sample_size: Optional[int] = 2000,  # Changed to Optional[int]
     model_name: str = "roberta-base",
     epochs: int = 3,
     batch_size: int = 8,
@@ -156,7 +153,7 @@ def ml_pipeline_flow(
         Dictionary with all pipeline results
     """
     logging.info("="*70)
-    logging.info("🚀 STARTING PREFECT ML PIPELINE")
+    logging.info(" STARTING PREFECT ML PIPELINE")
     logging.info("="*70)
     
     # Task 1: Data Ingestion
@@ -192,7 +189,7 @@ def ml_pipeline_flow(
     }
     
     logging.info("="*70)
-    logging.info("🎉 PREFECT ML PIPELINE COMPLETE")
+    logging.info(" PREFECT ML PIPELINE COMPLETE")
     logging.info("="*70)
     logging.info(f"Model Path: {pipeline_results['model_path']}")
     logging.info(f"F1 Score: {pipeline_results['metrics']['f1']:.4f}")
@@ -227,5 +224,5 @@ if __name__ == "__main__":
         mlflow_uri=args.mlflow_uri
     )
     
-    print("\n✅ Pipeline execution complete!")
+    print("\n Pipeline execution complete!")
     print(f"Results: {result}")

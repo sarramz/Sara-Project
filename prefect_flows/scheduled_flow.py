@@ -61,10 +61,10 @@ def evaluate_model_performance_task(training_results: dict):
     f1_score = training_results['metrics']['f1']
     
     if f1_score >= f1_threshold:
-        print(f"✅ Model performance acceptable: F1={f1_score:.4f} >= {f1_threshold}")
+        print(f" Model performance acceptable: F1={f1_score:.4f} >= {f1_threshold}")
         return True
     else:
-        print(f"⚠️ Model performance below threshold: F1={f1_score:.4f} < {f1_threshold}")
+        print(f" Model performance below threshold: F1={f1_score:.4f} < {f1_threshold}")
         return False
 
 
@@ -80,9 +80,9 @@ def notify_completion_task(pipeline_results: dict, performance_ok: bool):
     # TODO: Implement actual notification (email, Slack, etc.)
     
     message = f"""
-    🤖 ML Pipeline Execution Report
+     ML Pipeline Execution Report
     
-    Status: {'✅ Success' if performance_ok else '⚠️ Warning'}
+    Status: {' Success' if performance_ok else 'Warning'}
     Model: {pipeline_results['model_path']}
     
     Metrics:
@@ -110,7 +110,7 @@ def scheduled_ml_pipeline_flow(
     data_path: str = "data/fake_news.csv",
     check_drift: bool = True,
     model_name: str = "roberta-base",
-    epochs: int = 3,
+    epochs: int = 1,
     batch_size: int = 8
 ):
     """
@@ -127,13 +127,13 @@ def scheduled_ml_pipeline_flow(
     if check_drift:
         should_retrain = check_data_drift_task()
         if not should_retrain:
-            print("⏭️ Skipping training - no data drift detected")
+            print(" Skipping training - no data drift detected")
             return {"status": "skipped", "reason": "no_drift"}
     
     # Run main pipeline
     pipeline_results = ml_pipeline_flow(
         data_path=data_path,
-        sample_size=None,  # Use full dataset
+        sample_size=2000, 
         model_name=model_name,
         epochs=epochs,
         batch_size=batch_size,
@@ -155,7 +155,6 @@ def scheduled_ml_pipeline_flow(
 
 
 if __name__ == "__main__":
-    # Deploy with schedule using Prefect 3.x API
     scheduled_ml_pipeline_flow.deploy(
         name="ml-pipeline-daily-retrain",
         work_pool_name="default-agent-pool",
@@ -166,7 +165,7 @@ if __name__ == "__main__":
             "data_path": "data/fake_news.csv",
             "check_drift": True,
             "model_name": "roberta-base",
-            "epochs": 3,
+            "epochs": 1,
             "batch_size": 8
         },
         # Schedule: Run daily at 2 AM UTC
@@ -174,11 +173,11 @@ if __name__ == "__main__":
     )
     
     print("\n" + "="*70)
-    print("✅ SCHEDULED DEPLOYMENT CREATED")
+    print(" SCHEDULED DEPLOYMENT CREATED")
     print("="*70)
     print(f"Deployment Name: ml-pipeline-daily-retrain")
     print(f"Schedule: Daily at 2:00 AM UTC")
-    print("\n📋 The pipeline will automatically:")
+    print("\n The pipeline will automatically:")
     print("  1. Check for data drift")
     print("  2. Retrain model if needed")
     print("  3. Evaluate performance")

@@ -26,7 +26,6 @@ EXPOSE 8080
 RUN mkdir -p /prefect && \
     chmod -R 777 /prefect
 
-RUN pip install --no-cache-dir "accelerate>=0.26.0"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

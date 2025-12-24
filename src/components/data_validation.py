@@ -63,7 +63,7 @@ class DataValidation:
         if missing_cols:
             error = f"Missing required columns: {missing_cols}"
             self.validation_errors.append(error)
-            logging.error(f" {error}")
+            logging.error(f" ERROR {error}")
             return False
 
         logging.info(" Schema validation passed")
@@ -86,7 +86,7 @@ class DataValidation:
         if len(df) < self.config.min_samples:
             error = f"Insufficient samples: {len(df)} < {self.config.min_samples}"
             self.validation_errors.append(error)
-            logging.error(f"error {error}")
+            logging.error(f" ERROR{error}")
             is_valid = False
 
         # Check missing values
@@ -95,7 +95,7 @@ class DataValidation:
             if missing_ratio > self.config.max_missing_ratio:
                 error = f"Too many missing values in {col}: {missing_ratio:.2%}"
                 self.validation_errors.append(error)
-                logging.error(f"error {error}")
+                logging.error(f" ERROR {error}")
                 is_valid = False
 
         # Check text length
@@ -105,7 +105,7 @@ class DataValidation:
             if short_texts > len(df) * 0.1:  # More than 10% short texts
                 warning = f"Many short texts detected: {short_texts} samples ({short_texts/len(df):.1%})"
                 self.validation_warnings.append(warning)
-                logging.warning(f"WARNING  {warning}")
+                logging.warning(f" WARNING {warning}")
 
         # Check labels
         if "label" in df.columns:
@@ -122,12 +122,12 @@ class DataValidation:
             if min_label_ratio < 0.1:  # Less than 10%
                 warning = f"Imbalanced dataset: {label_counts.to_dict()}"
                 self.validation_warnings.append(warning)
-                logging.warning(f"WARNING  {warning}")
+                logging.warning(f" WARNING  {warning}")
 
         if is_valid:
-            logging.info(" Data quality validation passed")
+            logging.info(" ERROR Data quality validation passed")
         else:
-            logging.error(" Data quality validation failed")
+            logging.error("ERROR Data quality validation failed")
 
         return is_valid
 
@@ -146,7 +146,7 @@ class DataValidation:
         if "label" not in df.columns:
             error = "Label column not found"
             self.validation_errors.append(error)
-            logging.error(f"ERROR {error}")
+            logging.error(f" ERROR{error}")
             return False
 
         # Convert labels to int if needed
@@ -155,7 +155,7 @@ class DataValidation:
         except (ValueError, TypeError) as e:
             error = f"Cannot convert labels to integer: {str(e)}"
             self.validation_errors.append(error)
-            logging.error(f"ERROR {error}")
+            logging.error(f" ERROR {error}")
             return False
 
         # Check label types
@@ -164,7 +164,7 @@ class DataValidation:
         if invalid:
             error = f"Invalid label values: {invalid}"
             self.validation_errors.append(error)
-            logging.error(f"ERROR {error}")
+            logging.error(f" ERROR {error}")
             return False
 
         # Check label distribution
@@ -177,7 +177,7 @@ class DataValidation:
             logging.error(f"ERROR {error}")
             return False
 
-        logging.info(" Label validation passed")
+        logging.info("  Label validation passed")
         return True
 
     def split_data(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -263,7 +263,7 @@ class DataValidation:
 
             if not is_valid:
                 error_msg = f"Validation failed with {len(self.validation_errors)} errors"
-                logging.error(f" ERROR {error_msg}")
+                logging.error(f"ERROR {error_msg}")
                 logging.error(f"Errors: {self.validation_errors}")
                 
                 # Print errors to console for DVC visibility
@@ -281,7 +281,7 @@ class DataValidation:
                 
                 raise ValueError(error_msg)
 
-            logging.info(" All validations passed")
+            logging.info("  All validations passed")
 
             # Split data into train and test
             train_df, test_df = self.split_data(df)

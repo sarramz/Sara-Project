@@ -1,0 +1,38 @@
+[flake8]
+# Flake8 configuration for code linting
+
+max-line-length = 120
+max-complexity = 10
+
+# Exclude patterns
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    env,
+    build,
+    dist,
+    *.egg-info,
+    .pytest_cache,
+    .mypy_cache,
+    mlruns,
+    mlartifacts,
+    artifacts
+
+# Ignore specific errors
+extend-ignore =
+    E203,  # Whitespace before ':'
+    E501,  # Line too long (handled by black)
+    W503,  # Line break before binary operator
+    E402,  # Module level import not at top of file
+
+# Per-file ignores
+per-file-ignores =
+    __init__.py:F401
+    tests/*:F401,F811
+
+# Show source code for errors
+show-source = True
+statistics = True
+count = True

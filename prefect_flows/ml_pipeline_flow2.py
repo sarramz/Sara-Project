@@ -52,10 +52,10 @@ def data_preparation_task(raw_data_path: str):
     Returns:
         Path to prepared data file
     """
-    logging.info("🔄 Starting Data Preparation Task")
+    logging.info(" Starting Data Preparation Task")
     preparation = DataPreparation()
     prepared_data_path = preparation.initiate_data_preparation(raw_data_path)
-    logging.info(f"✅ Data Preparation Complete: {prepared_data_path}")
+    logging.info(f" Data Preparation Complete: {prepared_data_path}")
     return prepared_data_path
 
 
@@ -75,7 +75,7 @@ def data_validation_task(prepared_data_path: str):
     train_path, test_path, report_path = validation.initiate_data_validation(
         prepared_data_path
     )
-    logging.info(f"✅ Data Validation Complete")
+    logging.info(f" Data Validation Complete")
     logging.info(f"   Train: {train_path}")
     logging.info(f"   Test: {test_path}")
     return train_path, test_path, report_path

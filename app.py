@@ -24,9 +24,9 @@ error_counter = Counter("fakenews_errors_total", "Total errors", ["error_type"])
 # Initialize prediction pipeline
 try:
     pipeline = FakeNewsPredictionPipeline(model_path="artifacts/roberta_fakenews")
-    print("✓ Fake News Detection model loaded successfully")
+    print("Fake News Detection model loaded successfully")
 except Exception as e:
-    print(f"❌ Error loading model: {str(e)}")
+    print(f" Error loading model: {str(e)}")
     print("Please train a model first: python run_pipeline_fakenews.py")
     pipeline = None
 
@@ -168,7 +168,7 @@ def metrics():
 
 if __name__ == "__main__":
     print("\n" + "=" * 70)
-    print("  🚀 Fake News Detection API with Prometheus Monitoring")
+    print("  Fake News Detection API with Prometheus Monitoring")
     print("=" * 70)
     print("Endpoints:")
     print("  - GET  /           - Home page")
