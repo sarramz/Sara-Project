@@ -192,7 +192,7 @@ jobs:
     - name: Start MLflow service
       if: steps.check_compose.outputs.exists == 'true'
       run: |
-        docker-compose up -d mlflow || echo "MLflow service not found in docker-compose"
+        docker compose up -d mlflow || echo "MLflow service not found in docker-compose"
       continue-on-error: true
         
     - name: Wait for MLflow
@@ -210,8 +210,8 @@ jobs:
     - name: Stop services
       if: always() && steps.check_compose.outputs.exists == 'true'
       run: |
-        docker-compose logs mlflow || true
-        docker-compose down -v || true
+        docker compose logs mlflow || true
+        docker compose down -v || true
         
     - name: Skip integration tests
       if: steps.check_compose.outputs.exists == 'false'
@@ -249,7 +249,7 @@ jobs:
     - name: Start all services
       if: steps.check_compose.outputs.exists == 'true'
       run: |
-        docker-compose up -d
+        docker compose up -d
         
     - name: Wait for services
       if: steps.check_compose.outputs.exists == 'true'
@@ -291,16 +291,16 @@ jobs:
       if: always() && steps.check_compose.outputs.exists == 'true'
       run: |
         echo "=== MLflow Logs ==="
-        docker-compose logs --tail=50 mlflow || true
+        docker compose logs --tail=50 mlflow || true
         echo "=== Prefect Server Logs ==="
-        docker-compose logs --tail=50 prefect || true
+        docker compose logs --tail=50 prefect || true
         echo "=== ML App Logs ==="
-        docker-compose logs --tail=50 ml-app || true
+        docker compose logs --tail=50 ml-app || true
         
     - name: Stop all services
       if: always() && steps.check_compose.outputs.exists == 'true'
       run: |
-        docker-compose down -v
+        docker compose down -v
         
     - name: Skip full stack test
       if: steps.check_compose.outputs.exists == 'false'
@@ -376,7 +376,7 @@ jobs:
         echo "1. Push Docker image to registry"
         echo "2. SSH to production server"
         echo "3. Pull latest images"
-        echo "4. Run docker-compose up with production config"
+        echo "4. Run docker compose up with production config"
         echo "5. Run health checks"
         echo "6. Send notifications"
 
@@ -391,7 +391,7 @@ jobs:
     - name: Print summary
       run: |
         echo "==================================="
-        echo "✅ CI/CD Pipeline Execution Summary"
+        echo " CI/CD Pipeline Execution Summary"
         echo "==================================="
         echo "Repository: ${{ github.repository }}"
         echo "Branch: ${{ github.ref }}"
@@ -400,9 +400,9 @@ jobs:
         echo "Workflow: ${{ github.workflow }}"
         echo "Run Number: ${{ github.run_number }}"
         echo "==================================="
-        echo "📝 Lint: ${{ needs.lint.result }}"
-        echo "🧪 Test: ${{ needs.test.result }}"
-        echo "🐳 Build: ${{ needs.build.result }}"
-        echo "🔗 Integration: ${{ needs.integration-test.result }}"
-        echo "🔒 Security: ${{ needs.security.result }}"
+        echo " Lint: ${{ needs.lint.result }}"
+        echo " Test: ${{ needs.test.result }}"
+        echo " Build: ${{ needs.build.result }}"
+        echo " Integration: ${{ needs.integration-test.result }}"
+        echo " Security: ${{ needs.security.result }}"
         echo "==================================="
